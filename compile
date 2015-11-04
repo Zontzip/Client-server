@@ -1,0 +1,2 @@
+gcc -g -O2 -Wall -c -o daytimeclient.o daytimeclient.c
+gcc -g -O2 -Wall -o daytimeclient daytimeclient.o ../libunp.a
