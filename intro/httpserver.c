@@ -5,7 +5,7 @@
 #define ERROR_PAGE "HTTP/1.1 404 Not Found <br><br>"
 
 int main(int argc, char **argv) {
-	int listenfd, connfd, n;
+	int listenfd, connfd, n, count = 0;
 	struct sockaddr_in servaddr;
 	char recvbuff[MAXLINE];
 	char sendbuff[MAXLINE];
@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 	/* Creation of socket is identical to client */
 	listenfd = Socket(AF_INET, SOCK_STREAM, 0);
 
-	/* The servers know port is bound to the socket by filling in an Internet socket address structure 
+	/* The servers know port :wqis bound to the socket by filling in an Internet socket address structure 
 	and then calling bind */
 	/* The IP address is specified as INADDR_ANY which allows to server to accept a client connection on 
 	any interface. htonl is same as htons but converts hostlong */
@@ -55,8 +55,18 @@ int main(int argc, char **argv) {
 			}
 
 			sscanf(recvbuff, "%s %s %s", cmd, path, vers); 
-			 		
+			
+			if (strstr(recvbuff, "\r\n\r\n") > 0) {
+				break;
+			}			 		
 		}
+
+		strcpy(sendbuff, "");
+
+		if (strstr(path, "/index.html")) {
+			strcpy(sendbuff, HOME_PAGE);
+			Write(connfd, sendbuff, sizeof(sendbuff));			
+		} 
 		
 		getchar();
 		Close(connfd);
