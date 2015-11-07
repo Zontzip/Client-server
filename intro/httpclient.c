@@ -21,8 +21,8 @@ int main (int argc, char **argv) {
 	if (connect(sockfd, (SA *) &servaddr, sizeof(servaddr)) < 0) // (sockfd that we created, address of the struct holding addressing info, size of struct) 
 		err_sys("connect error");
 	
-	
-	snprintf(sendline, sizeof(sendline), "GET /index.html HTTP/1.1\r\nHost: www.comp.dit.ie\r\nConnection: close\r\n\r\n"); // http conversation, stick into buffer than writes contents
+	/* The only difference between this and daytime is the inclusion of send a HTTP request */
+	snprintf(sendline, sizeof(sendline), "GET /index.html HTTP/1.1\r\nHost: www.comp.dit.ie\r\nConnection: close\r\n\r\n");
 	Write(sockfd, sendline, strlen(sendline)); 
 
 	while ((n = read(sockfd, recvline, MAXLINE)) > 0) {
