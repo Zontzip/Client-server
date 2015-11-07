@@ -46,8 +46,6 @@ int main (int argc, char **argv) {
 	if (n < 0)
 		err_sys("read error");
 
-	printf("counter = %d\n", counter);
-
 	/* Exit the program and close all open descriptors */ 
 	exit(0);
 }
