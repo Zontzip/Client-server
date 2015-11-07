@@ -1,10 +1,18 @@
 #include "unp.h"
-#include "string.h"
+#include <string.h>
+#include <stdio.h>
+#define HOME_PAGE "<!DOCTYPE html> <html> <body> <h1> Hello Alex! </h1> </body> </html>"
+#define ERROR_PAGE "HTTP/1.1 404 Not Found <br><br>"
 
 int main(int argc, char **argv) {
-	int listenfd, connfd;
+	int listenfd, connfd, n;
 	struct sockaddr_in servaddr;
-	char buff[MAXLINE];
+	char recvbuff[MAXLINE];
+	char sendbuff[MAXLINE];
+
+	char cmd[16];
+	char path[64];
+	char vers[16];
 
 	if (argc != 2) 
 		err_quit("usage: <Program Name> <Port No.>");
@@ -36,11 +44,19 @@ int main(int argc, char **argv) {
 		connfd = Accept(listenfd, (SA *) NULL, NULL);
 
 		if (connfd > 0){    
-         	printf("The Client is connected...\n");
-      	}
+	         	printf("The Client is connected...\n");
+      		}
 
-		snprintf(buff, sizeof(buff), "");
-		Write(connfd, buff, strlen(buff));
+		while((n = read(connfd, recvbuff, MAXLINE)) > 0) {
+			recvbuff[n] = 0;
+
+			if(fputs(recvbuff, stdout) == EOF) {
+				err_sys("fputs error");
+			}
+
+			sscanf(recvbuff, "%s %s %s", cmd, path, vers); 
+			 		
+		}
 		
 		getchar();
 		Close(connfd);
