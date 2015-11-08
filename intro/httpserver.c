@@ -5,7 +5,7 @@
 #define ERROR_PAGE "HTTP/1.1 404 Not Found <br><br>"
 
 int main(int argc, char **argv) {
-	int listenfd, connfd, n, count = 0;
+	int listenfd, connfd, n;
 	struct sockaddr_in servaddr;
 	char recvbuff[MAXLINE];
 	char sendbuff[MAXLINE];
@@ -65,10 +65,12 @@ int main(int argc, char **argv) {
 
 		if (strstr(path, "/index.html")) {
 			strcpy(sendbuff, HOME_PAGE);
-			Write(connfd, sendbuff, sizeof(sendbuff));			
+		} else {
+			strcpy(sendbuff, ERROR_PAGE);
 		} 
 		
-		getchar();
+		Write(connfd, sendbuff, sizeof(sendbuff));			
+		
 		Close(connfd);
 	}
 }
