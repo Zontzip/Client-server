@@ -1,76 +1,81 @@
 #include "unp.h"
-#include <string.h>
-#include <stdio.h>
-#define HOME_PAGE "<!DOCTYPE html> <html> <body> <h1> Hello Alex! </h1> </body> </html>"
-#define ERROR_PAGE "HTTP/1.1 404 Not Found <br><br>"
 
 int main(int argc, char **argv) {
-	int listenfd, connfd, n;
-	struct sockaddr_in servaddr;
-	char recvbuff[MAXLINE];
-	char sendbuff[MAXLINE];
 
-	char cmd[16];
-	char path[64];
-	char vers[16];
+	int n, listenfd, connfd, char_in, count = 0; // Socket Ids; one for listening and one for the connected socket.
+	struct sockaddr_in servaddr, cliaddr; // Address structure to hold this server's address.
+	char sendbuff[MAXLINE], recvbuff[MAXLINE], cmd[16], path[64], filepath[64] = ".", vers[16];
+	
+	FILE *fd;
 
-	if (argc != 2) 
-		err_quit("usage: <Program Name> <Port No.>");
+	if (argc != 2) {
+		err_quit("Usage: <Program Name><Port No.>\n");
+	}
 
-	/* Creation of socket is identical to client */
+
+	// Create a socket.
 	listenfd = Socket(AF_INET, SOCK_STREAM, 0);
 
-	/* The servers known port is bound to the socket by filling in an Internet socket address structure 
-	and then calling bind */
-	/* The IP address is specified as INADDR_ANY which allows to server to accept a client connection on 
-	any interface. htonl is same as htons but converts hostlong */
-	bzero(&servaddr, sizeof(servaddr));
-	servaddr.sin_family = AF_INET;
-	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	servaddr.sin_port = htons(atoi(argv[1]));
+	bzero(&servaddr, sizeof(servaddr)); // Zero and fill in server address structure.
+	servaddr.sin_family 		= AF_INET;
+	servaddr.sin_addr.s_addr 	= htonl(INADDR_ANY); // Connect to any local ip address.
+	servaddr.sin_port 		= htons(atoi(argv[1])); // Daytime server port number;
 
+	// Connects the socket to an external interface.
 	Bind(listenfd, (SA *) &servaddr, sizeof(servaddr));
 
-	/* By calling listen, the socket is converted to a listening socket that incoming connections 
-	from clients are accepted by the  kernel. socket, bind and listen are the three steps for setting up a 
-	listening descriptor for any TCP server */
+	// Changes the socket to a " Passive listening" socket
 	Listen(listenfd, LISTENQ);
 
-	/* When a handshake is complete, accept returns a value that is used as the connection descriptor. 
-	This new descriptor is used for communication with the new client. A new deriptor is returned by accept 
-	for each client that connects to the server. */
-	for( ; ; )
-	{
+
+	for ( ; ; ) {
+		// Accept next connection request.
 		connfd = Accept(listenfd, (SA *) NULL, NULL);
 
-		if (connfd > 0){    
-	         	printf("The Client is connected...\n");
-      		}
-
 		while((n = read(connfd, recvbuff, MAXLINE)) > 0) {
-			recvbuff[n] = 0;
+        	recvbuff[n] = 0; // Null terminate.
 
-			if(fputs(recvbuff, stdout) == EOF) {
-				err_sys("fputs error");
-			}
+        	if(fputs(recvbuff, stdout) == EOF) {
+                	err_sys("fputs error");
+        	}
 
-			sscanf(recvbuff, "%s %s %s", cmd, path, vers); 
-			
-			if (strstr(recvbuff, "\r\n\r\n") > 0) {
+			if(strstr(recvbuff, "\r\n\r\n") > 0) {
 				break;
-			}			 		
+			}
+        }
+
+	// GET /index.html HTTP/1.1
+	sscanf(recvbuff,"%s %s %s", cmd, path, vers);
+	strcat(filepath, path);
+	printf("Filepath: %s\n", filepath);
+
+	if(strcmp(filepath, "./") == 0) 
+		strcpy(filepath, "./index.html");
+
+	if((fd = fopen (filepath, "r")) == NULL) {
+			// fopen(error.html file ...);
+			printf("error 404\n");
+	}
+	else {
+		int c;
+
+		while ((c = fgetc(fd)) != EOF) {
+			sendbuff[count] = c;
+			count++;
 		}
+		sendbuff[count] = 0;
+	}
 
-		strcpy(sendbuff, "");
 
-		if (strstr(path, "/index.html")) {
-			strcpy(sendbuff, HOME_PAGE);
-		} else {
-			strcpy(sendbuff, ERROR_PAGE);
-		} 
-		
-		Write(connfd, sendbuff, sizeof(sendbuff));			
-		
-		Close(connfd);
+	// Write data to the client.
+	Write(connfd, sendbuff, strlen(sendbuff));
+
+	Close(connfd);
+	fclose(fd);
+            count = 0;
+	strcpy(filepath, ".");
 	}
 }
+// Note the use of the upper-case letters at the start of the socket primitives names.
+// These are wrapper function that include error-checking functionality for each call.
+// The actual socket primitives use lower case names.
