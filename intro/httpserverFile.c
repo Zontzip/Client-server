@@ -31,9 +31,9 @@ int main(int argc, char **argv) {
 	for ( ; ; ) {
 		len = sizeof(cliaddr);
 		
-		connfd = Accept(listenfd, (SA *) NULL, NULL); // Accept next connection request
+		connfd = Accept(listenfd, (SA *) &cliaddr, &len); // Accept next connection request
 
-		printf("\nConnection from %s, port %d\n", Inet_ntop(AF_INET, &cliaddr.sin_addr, buff, sizeof(buff)), ntohs(cliaddr.sin_port));
+		printf("\nConnection from %s, port %d\n", Inet_ntop(AF_INET, &cliaddr.sin_addr, sendbuff, sizeof(sendbuff)), ntohs(cliaddr.sin_port));
 
 		while((n = read(connfd, recvbuff, MAXLINE)) > 0) {
         	recvbuff[n] = 0; // Null terminate
@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
 		}
 
 		// Check if the requested file exists
-		if((fd = fopen (filepath, "r")) == NULL) {
+		if((hFile = fopen (filepath, "r")) == NULL) {
 				printf("error 404\n"); // Open the error file
 		}
 
