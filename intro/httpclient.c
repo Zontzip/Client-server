@@ -22,7 +22,7 @@ int main (int argc, char **argv) {
 		err_sys("connect error");
 	
 	/* The only difference between this and daytime is the inclusion of send a HTTP request */
-	snprintf(sendline, sizeof(sendline), "GET /index.html HTTP/1.1\r\nHost: www.comp.dit.ie\r\nConnection: close\r\n\r\n");
+	snprintf(sendline, sizeof(sendline), "GET /index.html HTTP/1.1\r\nHost: www.zontzor.xyz\r\nConnection: close\r\n\r\n");
 	Write(sockfd, sendline, strlen(sendline)); 
 
 	while ((n = read(sockfd, recvline, MAXLINE)) > 0) {
