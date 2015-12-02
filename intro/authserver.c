@@ -67,14 +67,11 @@ int main(int argc, char **argv) {
     	strcpy(sendbuff, "");
 
     	if (strcmp(uname, "admin") == 0 && strcmp(pswrd, "pwd") == 0) {
-    		strcpy(sendbuff, "PROCEED");
-    		strcat(sendbuff, ipadr);
-    		strcat(sendbuff, portno);
-    		printf("Success");
+    		Inet_ntop(AF_INET, &cliaddr.sin_addr, buff, sizeof(buff));
+
+		snprintf(sendbuff, sizeof(sendbuff), "PROCEED, IP: %s, Port: %d\r\n\r\n", buff , ntohs(cliaddr.sin_port) );
     	} else {
     		strcpy(sendbuff, "DENIED" );
-    		strcat(sendbuff, ipadr);
-    		strcat(sendbuff, portno);
     		printf("Failure");
     	}
 
