@@ -14,8 +14,6 @@ int main(int argc, char **argv) {
 	struct sockaddr_in servaddr, cliaddr;
 	char uname[50];
 	char pswrd[50];
-	char temp1[50];
-	char temp2[50];
 	char recvbuff[MAXLINE];
 	char sendbuff[MAXLINE];
 	char ipadr[32];
@@ -39,12 +37,7 @@ int main(int argc, char **argv) {
 	{
 		len = sizeof(cliaddr);
 		
-		connfd = Accept(listenfd, (SA *) NULL, NULL);
-
-		printf("\nConnection from %s, port %d\n", Inet_ntop(AF_INET, &cliaddr.sin_addr, sendbuff, sizeof(sendbuff)), ntohs(cliaddr.sin_port));
-
-		strcpy(ipadr, Inet_ntop(AF_INET, &cliaddr.sin_addr, sendbuff, sizeof(sendbuff)));
-		strcpy(portno, ntohs(cliaddr.sin_port));
+		connfd = Accept(listenfd, (SA *) &cliaddr, &len);
 
 		if (connfd > 0){    
 	         printf("The Client is connected...\n");
@@ -57,7 +50,7 @@ int main(int argc, char **argv) {
                 	err_sys("fputs error");
         	}
 
-        	sscanf(recvbuff,"%s %s %s %s", temp1, uname, temp2, pswrd);
+        	sscanf(recvbuff, "username: %s password: %s\r\n\r\n", uname, pswrd);
 
         	if (strstr(recvbuff, "\r\n\r\n") > 0) {
 				break;
@@ -67,11 +60,12 @@ int main(int argc, char **argv) {
     	strcpy(sendbuff, "");
 
     	if (strcmp(uname, "admin") == 0 && strcmp(pswrd, "pwd") == 0) {
-    		Inet_ntop(AF_INET, &cliaddr.sin_addr, buff, sizeof(buff));
+    		Inet_ntop(AF_INET, &cliaddr.sin_addr, recvbuff, sizeof(recvbuff));
 
-		snprintf(sendbuff, sizeof(sendbuff), "PROCEED, IP: %s, Port: %d\r\n\r\n", buff , ntohs(cliaddr.sin_port) );
+			snprintf(sendbuff, sizeof(sendbuff), "PROCEED, IP: %s, Port: %d\r\n\r\n", recvbuff , ntohs(cliaddr.sin_port) );
+    		printf("Success");
     	} else {
-    		strcpy(sendbuff, "DENIED" );
+    		strcpy(sendbuff, "DENIED");
     		printf("Failure");
     	}
 
